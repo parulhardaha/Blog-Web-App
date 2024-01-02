@@ -1,0 +1,15 @@
+<h2>My name is {{first_name}}</h2>
+<p>{{stuff| title}}</p>
+
+<h3>My Favorite foods are :</h3>
+{% for food in my_list %}
+   {% if food == 36 %}
+     {{food + 100}} <br>
+   {% else %} 
+      {{food}} <br>
+   {% endif %}  
+{% endfor %}
+
+<br>
+
+{{my_list.0 |reverse}}
