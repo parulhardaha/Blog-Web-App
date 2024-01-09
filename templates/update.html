@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  
+{% for message in get_flashed_messages() %}
+   <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+   </div>
+   
+{% endfor %}
+
+{% if name %}
+      <h2>Update User!</h2>
+      <br><br></br>
+{% for our_user in our_users %}
+      {{ our_user.id}}. {{ our_user.name}} - {{ our_user.email}} - {{ our_user.favorite_Colour}} <br>
+{% endfor %}
+         
+{% else %}
+      <h4>Update User:</h4>
+        <br/>
+<div class="shadow p-3 mb-5 bg-body rounded">
+      <form  action="/update/{{ name_to_update.id }}" method="POST">
+         {{ form.hidden_tag() }}
+         {{ form.name.label(class="form-label") }}
+         {{ form.name(class="form-control",value=name_to_update.name) }}
+        <br/>
+
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control",value=name_to_update.email) }}
+       <br/>
+
+        {{ form.favorite_Colour.label(class="form-label") }}
+        {{ form.favorite_Colour(class="form-control",value=name_to_update.favorite_Colour) }}
+        <br/>
+
+         {{ form.submit(class="btn btn-secondary") }}
+
+         <a href="{{url_for('delete', id=id)}}" class="btn btn-danger">Delete</a>
+      </form>
+</div>      
+      <br>
+
+
+{% endif %} 
+   
+{% endblock %}    

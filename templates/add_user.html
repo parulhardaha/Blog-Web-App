@@ -14,14 +14,17 @@
 
 {% if name %}
       <h2>User Added!</h2>
-      <br><br></br>
+      <br><br>  
+<table class="table table-hover table-bordered tbale-striped ">         
 {% for our_user in our_users %}
-      {{ our_user.id}}. {{ our_user.name}} - {{ our_user.email}} <br>
-{% endfor %}
-         
+    <tr>
+    <td> {{ our_user.id}}. <a href="{{url_for('update', id=our_user.id)}}"> {{ our_user.name }}</a> - {{ our_user.email}}- {{ our_user.favorite_Colour}} - <a href="{{url_for('delete', id=our_user.id)}}">Delete</a></td>
+    </tr>     
+  {% endfor %}
+</table>
+
 {% else %}
-      <h4>User List:</h4>
-        <br/>
+      <h4>User Lists:</h4>
 <div class="shadow p-3 mb-5 bg-body rounded">
       <form method="POST">
          {{ form.hidden_tag() }}
@@ -33,14 +36,26 @@
         {{ form.email(class="form-control") }}
        <br/>
 
+        {{ form.favorite_Colour.label(class="form-label") }}
+        {{ form.favorite_Colour(class="form-control") }}
+        <br/>
+
+        {{ form.password_hash.label(class="form-label") }}
+        {{ form.password_hash(class="form-control") }}
+        <br/>
+
+        {{ form.password_hash2.label(class="form-label") }}
+        {{ form.password_hash2(class="form-control") }}
+        <br/>
+
          {{ form.submit(class="btn btn-secondary") }}
       </form>
 </div>      
-      <br>
+      
 <table class="table table-hover table-bordered tbale-striped ">      
 {% for our_user in our_users %}
-      <tr>
-       <td> {{ our_user.id}}. {{ our_user.name}} - {{ our_user.email}} </td>
+      <tr> 
+       <td> {{ our_user.id}}. <a href="{{url_for('update', id=our_user.id)}}"> {{ our_user.name }}</a> - {{ our_user.email}}- {{ our_user.favorite_Colour}}- <a href="{{url_for('delete', id=our_user.id)}}">Delete</a> </td>
       </tr>
 {% endfor %}
 </table>
