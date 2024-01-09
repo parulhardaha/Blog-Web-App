@@ -7,6 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
+from wtforms.widgets import TextArea
 
 #create a Flask Instance
 app = Flask(__name__)
@@ -27,6 +28,45 @@ app.config['SECRET_KEY'] = "my super secret key is here"
 db = SQLAlchemy(app)
 migrate=Migrate(app,db)
 #app.app_context().push()
+
+# Create a Blog Post Model
+class Posts(db.Model):
+  id= db.Column(db.Integer,primary_key=True)
+  title=db.Column(db.String(200))
+  content=db.Column(db.Text)
+  author=db.Column(db.String(200))
+  date_added=db.Column(db.DateTime,default=datetime.utcnow)
+  slug=db.Column(db.String(200))
+
+#Create Posts Form
+class PostForm(FlaskForm):
+  title=StringField("Title",validators=[DataRequired()])
+  content=StringField("Content",validators=[DataRequired()],widget=TextArea())
+  author=StringField("Author",validators=[DataRequired()])
+  slug=StringField("Slug",validators=[DataRequired()])
+  submit=SubmitField("Submit")
+
+#Add pOst page
+@app.route('/add-post', methods=['GET','POST']) 
+def add_post():
+  form=PostForm()
+
+  if form.validate_on_submit():
+    post=Posts(title=form.title.data,content=form.content.data,author=form.author.data,slug=form.slug.data)
+    #Clear data
+    form.title.data=''
+    form.content.data=''
+    form.author.data=''
+    form.slug.data=''
+
+    #Add data to database
+    db.session.add(post)
+    db.session.commit()
+
+    flash("Blog Post Submitted Successfully!")
+
+    #Redirect to the webpage
+  return render_template("add_post.html",form=form)
 
 #json thing
 @app.route('/date')
