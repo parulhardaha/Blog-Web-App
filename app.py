@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 from wtforms.widgets import TextArea
+from flask_login import UserMixin, login_user, login_required,LoginManager,current_user,logout_user
 
 #create a Flask Instance
 app = Flask(__name__)
@@ -29,6 +30,55 @@ db = SQLAlchemy(app)
 migrate=Migrate(app,db)
 #app.app_context().push()
 
+#flask_login stuff
+login_manager=LoginManager()
+login_manager.init_app(app)
+login_manager.login_view='login'
+
+@login_manager.user_loader
+def load_user(user_id):
+  return Users.query.get(int(user_id))
+
+#Create login form
+class LoginForm(FlaskForm):
+  username=StringField("UserName",validators=[DataRequired()])
+  password=PasswordField("Password",validators=[DataRequired()])
+  submit=SubmitField("Submit")
+
+#Create Login Page
+@app.route('/login',methods=['POST','GET'])
+def login():
+  form=LoginForm()
+  if form.validate_on_submit():
+     user=Users.query.filter_by(username=form.username.data).first()
+     if user:
+        #check hash
+        if check_password_hash(user.password_hash,form.password.data):
+          login_user(user)
+          flash("Login Successfull!!")
+          return redirect(url_for('dash'))
+        else:
+          flash("Wrong Passowrd - Tyr again!!")
+     else:
+      flash("User does not exist - try again!!")     
+  
+  return render_template("login.html",form=form)
+
+#Create logout Page
+@app.route('/logout',methods=['GET','POST'])
+@login_required
+def logout():
+  logout_user()
+  flash("You have been Logged out!! ")
+  return redirect(url_for('login'))
+
+#Create Dashboard Page
+@app.route('/dash',methods=['POST','GET'])
+@login_required
+def dash():
+  return render_template("dash.html")
+
+
 # Create a Blog Post Model
 class Posts(db.Model):
   id= db.Column(db.Integer,primary_key=True)
@@ -46,6 +96,24 @@ class PostForm(FlaskForm):
   slug=StringField("Slug",validators=[DataRequired()])
   submit=SubmitField("Submit")
 
+#
+@app.route('/post/delete/<int:id>')
+def delete_post(id):
+  post_to_delete=Posts.query.get_or_404(id)
+
+  try:
+    db.session.delete(post_to_delete)
+    db.session.commit()
+    flash("Blog Post Was Deleted Successfully!")
+    #Grab all the posts form database
+    posts=Posts.query.order_by(Posts.date_added)
+    return render_template("posts.html",posts=posts)
+  except:  
+    flash("Whoops! There was a problem deleting this Post! ")
+    #Grab all the posts form database
+    posts=Posts.query.order_by(Posts.date_added)
+    return render_template("posts.html",posts=posts)
+
 #Add posts page
 @app.route('/posts')
 def posts():
@@ -61,6 +129,7 @@ def post(id):
 
 #Edit post page
 @app.route('/posts/edit/<int:id>',methods=['GET','POST'])
+@login_required
 def edit_post(id):
   post=Posts.query.get_or_404(id)
   form=PostForm()
@@ -83,6 +152,7 @@ def edit_post(id):
 
 #Add pOst page
 @app.route('/add-post', methods=['GET','POST']) 
+@login_required
 def add_post():
   form=PostForm()
 
@@ -109,8 +179,9 @@ def get_current_date():
   return{"Date" : date.today()}
   
 #Crete Model
-class Users(db.Model):
+class Users(db.Model,UserMixin):
   id= db.Column(db.Integer,primary_key=True)
+  username=db.Column(db.String(20),nullable=False,unique=True)
   name=db.Column(db.String(100),nullable=False)
   email=db.Column(db.String(100),nullable=False,unique=True)
   favorite_Colour=db.Column(db.String(100))
@@ -153,6 +224,7 @@ def  delete(id):
 #Create User Class
 class UserForm(FlaskForm):
    name= StringField ("Enter your Name here", validators=[DataRequired()])
+   username= StringField ("Enter your UserName", validators=[DataRequired()])
    email= StringField ("Email", validators=[DataRequired()])
    favorite_Colour=StringField("Favorite Colour")
    password_hash=PasswordField('Password', validators=[DataRequired(),EqualTo('password_hash2',message="Passowrds mush match!")])
@@ -199,11 +271,12 @@ def add_user():
      if user is None:
        #Hashed Passwd
        hashed_pw=generate_password_hash(form.password_hash.data,"sha256")
-       user=Users(name=form.name.data,email=form.email.data,favorite_Colour=form.favorite_Colour.data,password_hash=hashed_pw)
+       user=Users(name=form.name.data,username=form.username.data,email=form.email.data,favorite_Colour=form.favorite_Colour.data,password_hash=hashed_pw)
        db.session.add(user)
        db.session.commit()
      name=form.name.data   
      form.name.data=''
+     form.username.data=''
      form.email.data=''
      form.favorite_Colour.data=''
      form.password_hash.data=''

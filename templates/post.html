@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  
-{% for message in get_flashed_messages() %}
+
+
+  {% for message in get_flashed_messages() %}
    <div class="alert alert-success alert-dismissible fade show" role="alert">
     {{ message }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -23,6 +24,7 @@
    {{ post.content }}
 </div>  
 <a href="{{url_for('posts')}}" class="btn btn-outline-secondary btn-sm" >Back To Blog</a>
- 
+<a href="{{url_for('edit_post',id=post.id) }}" class="btn btn-outline-secondary btn-sm">Edit Post</a> 
+<a href="{{url_for('posts',id=post.id) }}" class="btn btn-outline-danger btn-sm">Delete Post</a>
 
 {% endblock %}   
