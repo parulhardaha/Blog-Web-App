@@ -39,12 +39,37 @@ login_manager.login_view='login'
 def load_user(user_id):
   return Users.query.get(int(user_id))
 
+
+
+#Create seacrh form
+class SearchForm(FlaskForm):
+  searched=StringField("searched",validators=[DataRequired()])
+  submit=SubmitField("Submit")
+
+#Pass stuff for Navbar
+@app.context_processor
+def base():
+  form=SearchForm()
+  return dict(form=form)
+
+#Create search fun
+@app.route('/search',methods=["POST"])
+def search():
+  form=SearchForm()
+  #print("searched", form.searched.data)
+  if form.validate_on_submit():
+    post.searched=form.searched.data
+    return render_template("search.html",form=form,searched=post.searched)
+  #return render_template("200.html")
+
+
+
 #Create login form
 class LoginForm(FlaskForm):
   username=StringField("UserName",validators=[DataRequired()])
   password=PasswordField("Password",validators=[DataRequired()])
   submit=SubmitField("Submit")
-
+ 
 #Create Login Page
 @app.route('/login',methods=['POST','GET'])
 def login():
@@ -84,33 +109,41 @@ class Posts(db.Model):
   id= db.Column(db.Integer,primary_key=True)
   title=db.Column(db.String(200))
   content=db.Column(db.Text)
-  author=db.Column(db.String(200))
+  #author=db.Column(db.String(200))
   date_added=db.Column(db.DateTime,default=datetime.utcnow)
   slug=db.Column(db.String(200))
+  # Foreign key to link Users()->182
+  poster_id=db.Column(db.Integer, db.ForeignKey('users.id'))
 
 #Create Posts Form
 class PostForm(FlaskForm):
   title=StringField("Title",validators=[DataRequired()])
   content=StringField("Content",validators=[DataRequired()],widget=TextArea())
-  author=StringField("Author",validators=[DataRequired()])
+  author=StringField("Author")
   slug=StringField("Slug",validators=[DataRequired()])
   submit=SubmitField("Submit")
 
 #
 @app.route('/post/delete/<int:id>')
+@login_required
 def delete_post(id):
   post_to_delete=Posts.query.get_or_404(id)
-
-  try:
-    db.session.delete(post_to_delete)
-    db.session.commit()
-    flash("Blog Post Was Deleted Successfully!")
-    #Grab all the posts form database
-    posts=Posts.query.order_by(Posts.date_added)
-    return render_template("posts.html",posts=posts)
-  except:  
-    flash("Whoops! There was a problem deleting this Post! ")
-    #Grab all the posts form database
+  id=current_user.id 
+  if id==post_to_delete.poster.id:
+    try:
+       db.session.delete(post_to_delete)
+       db.session.commit()
+       flash("Blog Post Was Deleted Successfully!")
+       #Grab all the posts form database
+       posts=Posts.query.order_by(Posts.date_added)
+       return render_template("posts.html",posts=posts)
+    except:  
+        flash("Whoops! There was a problem deleting this Post! ")
+        #Grab all the posts form database
+        posts=Posts.query.order_by(Posts.date_added)
+        return render_template("posts.html",posts=posts)
+  else:
+    flash("You aren't authorized to Delete that Post!")  
     posts=Posts.query.order_by(Posts.date_added)
     return render_template("posts.html",posts=posts)
 
@@ -135,7 +168,7 @@ def edit_post(id):
   form=PostForm()
   if form.validate_on_submit():
     post.title=form.title.data
-    post.author=form.author.data
+    #post.author=form.author.data
     post.slug=form.slug.data
     post.content=form.content.data
     #Update Database
@@ -143,12 +176,18 @@ def edit_post(id):
     db.session.commit()
     flash("Post Has Been Updated!")
     return redirect(url_for('post',id=post.id))
-   
-  form.title.data=post.title
-  form.author.data=post.author
-  form.slug.data=post.slug
-  form.content.data=post.content
-  return render_template('edit_post.html',form=form)
+  
+  if current_user.id==post.poster.id: 
+    form.title.data=post.title
+    #form.author.data=post.author
+    form.slug.data=post.slug
+    form.content.data=post.content
+    return render_template('edit_post.html',form=form)
+  else:
+    flash("You are not authorizes to Edit this Post!")
+    posts=Posts.query.order_by(Posts.date_added)
+    return render_template("posts.html",posts=posts)
+  
 
 #Add pOst page
 @app.route('/add-post', methods=['GET','POST']) 
@@ -157,11 +196,12 @@ def add_post():
   form=PostForm()
 
   if form.validate_on_submit():
-    post=Posts(title=form.title.data,content=form.content.data,author=form.author.data,slug=form.slug.data)
+    poster=current_user.id
+    post=Posts(title=form.title.data,content=form.content.data,poster_id=poster,slug=form.slug.data)
     #Clear data
     form.title.data=''
     form.content.data=''
-    form.author.data=''
+    #form.author.data=''
     form.slug.data=''
 
     #Add data to database
@@ -188,6 +228,8 @@ class Users(db.Model,UserMixin):
   date_added=db.Column(db.DateTime,default=datetime.utcnow)
   #Password stuff
   password_hash=db.Column(db.String(120))
+  #User can have many post(one to many)->90
+  posts=db.relationship('Posts',backref='poster')
 
   @property
   def password(self):
@@ -233,6 +275,7 @@ class UserForm(FlaskForm):
 
 #Update Database Record
 @app.route('/update/<int:id>', methods=['GET','POST'])
+@login_required
 def update(id):
   form=UserForm()
   name_to_update=Users.query.get_or_404(id)
@@ -240,10 +283,11 @@ def update(id):
     name_to_update.name=request.form['name']
     name_to_update.email=request.form['email']
     name_to_update.favorite_Colour=request.form['favorite_Colour']
+    name_to_update.username=request.form['username']
     try:
       db.session.commit()
       flash("User Updated Successfully!")
-      return render_template("update.html",form=form,name_to_update=name_to_update,id=id)
+      return render_template("dash.html",form=form,name_to_update=name_to_update,id=id)
     except:
       flash("Error!!..Try again!!")
       return render_template("update.html",form=form,name_to_update=name_to_update)
