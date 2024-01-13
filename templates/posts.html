@@ -20,7 +20,7 @@
    <h4><a href="{{url_for('post',id=post.id) }}">{{ post.title }}</a></h4>
    By: {{ post.poster.name }}<br>
    {{ post.date_added }}  {{ post.slug }}<br>
-   {{ post.content }}<br><br>
+   {{ post.content|safe }}<br><br>
    <a href="{{url_for('post',id=post.id) }}" class="btn btn-outline-success btn-sm">View Post</a>
 
 

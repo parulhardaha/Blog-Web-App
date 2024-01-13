@@ -9,9 +9,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, login_required,LoginManager,current_user,logout_user
+from flask_ckeditor import CKEditor
+from flask_ckeditor import CKEditorField
 
 #create a Flask Instance
 app = Flask(__name__)
+# Add ckeditor
+ckeditor=CKEditor(app)
 
 #Add sql database 
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -118,7 +122,8 @@ class Posts(db.Model):
 #Create Posts Form
 class PostForm(FlaskForm):
   title=StringField("Title",validators=[DataRequired()])
-  content=StringField("Content",validators=[DataRequired()],widget=TextArea())
+  #content=StringField("Content",validators=[DataRequired()],widget=TextArea())
+  content = CKEditorField('Content')
   author=StringField("Author")
   slug=StringField("Slug",validators=[DataRequired()])
   submit=SubmitField("Submit")

@@ -12,7 +12,7 @@
    
 {% endfor %}
  
-<h2><strong>Blog Posts:</strong></h2>
+<h2><strong>Edit Post:</strong></h2>
 <br>
 
 
@@ -33,6 +33,9 @@
 
         {{ form.submit(class="btn btn-secondary") }}
      </form>
+     {{ ckeditor.load() }}
+
+     {{ ckeditor.config(name='body') }}
 </div>  
 <a href="{{url_for('posts')}}" class="btn btn-outline-secondary btn-sm" >Back To Blog</a>
 
