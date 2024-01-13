@@ -21,8 +21,13 @@
             {{current_user.name }}
         </div>
         <div class="card-body">
-          <h5 class="card-title">Welcome To Your User DashBoard</h5>
-          <p class="card-text"> <strong>Name: </strong>{{ current_user.name }}<br>
+         
+          <p class="card-text">
+                            <div class="container">
+                                <div class="row"> 
+                                   <div class="col-8"> 
+                            
+                                <strong>Name: </strong>{{ current_user.name }}<br>
                                 <strong>UserName:</strong>{{ current_user.username }}<br>
                                 <strong>Email:</strong>{{ current_user.email }}<br>
                                 <strong>User Id:</strong>{{ current_user.id }}<br>
@@ -31,6 +36,12 @@
           <a href="{{url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
           <a href="{{url_for('update', id=current_user.id)}}" class="btn btn-success btn-sm">Update</a>
           <a href="{{url_for('delete', id=current_user.id)}}" class="btn btn-danger btn-sm">Delete</a>
+
+                          </div>
+                        <div class="col-4"><img src=" {{ url_for( 'static',filename='images/smile.jpg')}}" width="160" align="right"></div>
+        </div>
+       </div>
+
         </div>
       </div>
 
