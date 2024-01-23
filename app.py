@@ -21,13 +21,14 @@ ckeditor=CKEditor(app)
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
 # Mysql  database 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password123@localhost/our_users'
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password123@localhost/our_users'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 
 
 #Secret key
-#app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'~
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.config['SECRET_KEY'] = "my super secret key is here"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']= False
 
 #Initalize The Databse
 db = SQLAlchemy(app)
@@ -331,7 +332,8 @@ def add_user():
      user=Users.query.filter_by(email=form.email.data).first()
      if user is None:
        #Hashed Passwd
-       hashed_pw=generate_password_hash(form.password_hash.data,"sha256")
+       hashed_pw = generate_password_hash(
+           form.password_hash.data, "pbkdf2:sha256")
        user=Users(name=form.name.data,username=form.username.data,email=form.email.data,favorite_Colour=form.favorite_Colour.data,password_hash=hashed_pw)
        db.session.add(user)
        db.session.commit()
