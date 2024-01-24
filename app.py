@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template,flash,request,redirect,url_for
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
@@ -11,6 +12,8 @@ from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, login_required,LoginManager,current_user,logout_user
 from flask_ckeditor import CKEditor
 from flask_ckeditor import CKEditorField
+
+first_run = os.environ.get('FIRST_RUN', "False")
 
 #create a Flask Instance
 app = Flask(__name__)
@@ -164,13 +167,6 @@ def delete_post(id):
     flash("You aren't authorized to Delete that Post!")  
     posts=Posts.query.order_by(Posts.date_added)
     return render_template("posts.html",posts=posts)
-
-#Add posts page
-@app.route('/posts')
-def posts():
-  #Grab all the posts form database
-  posts=Posts.query.order_by(Posts.date_added)
-  return render_template("posts.html",posts=posts)
   
 #A particular Post page
 @app.route('/posts/<int:id>')
@@ -347,14 +343,18 @@ def add_user():
   our_users=Users.query.order_by(Users.date_added)   
   return render_template("add_user.html",form=form,name=name,our_users=our_users)
 
-#ceate a Route decorator url
+#create a Route decorator url
 # http://127.0.0.1:5000/
 @app.route('/')
-def index():
-  first_name="Parul"
-  my_list=["Pizza","Burger","Pani puri",36,"Capchinno"]
-  stuff=" This is <strong>This text is important!</strong> Text"
-  return render_template("index.html", first_name=first_name, stuff=stuff, my_list=my_list)
+def posts():
+  global first_run
+  if first_run == "True":
+    first_run = "False"
+    db.drop_all()
+    db.create_all()
+  # Grab all the posts form database
+  posts = Posts.query.order_by(Posts.date_added)
+  return render_template("posts.html", posts=posts)
 
 #localhost:5000/user/Parul
 @app.route('/user/<name>')
