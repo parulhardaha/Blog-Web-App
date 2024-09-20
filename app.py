@@ -12,6 +12,8 @@ from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, login_required,LoginManager,current_user,logout_user
 from flask_ckeditor import CKEditor
 from flask_ckeditor import CKEditorField
+from sqlalchemy.exc import IntegrityError
+
 
 first_run = os.environ.get('FIRST_RUN', "False")
 
@@ -133,8 +135,12 @@ class Posts(db.Model):
   date_added=db.Column(db.DateTime,default=datetime.utcnow)
   slug=db.Column(db.String(200))
   # Foreign key to link Users()->182
-  poster_id=db.Column(db.Integer, db.ForeignKey('users.id'))
+  # Specify foreign key relationships
+  poster_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
+  # Relationships
+  author = db.relationship('Users', foreign_keys=[poster_id])
 #Create Posts Form
 class PostForm(FlaskForm):
   title=StringField("Title",validators=[DataRequired()])
@@ -204,28 +210,35 @@ def edit_post(id):
   
 
 #Add pOst page
-@app.route('/add-post', methods=['GET','POST']) 
+@app.route('/add-post', methods=['GET', 'POST']) 
 @login_required
 def add_post():
-  form=PostForm()
+    form = PostForm()
 
-  if form.validate_on_submit():
-    poster=current_user.id
-    post=Posts(title=form.title.data,content=form.content.data,poster_id=poster,slug=form.slug.data)
-    #Clear data
-    form.title.data=''
-    form.content.data=''
-    #form.author.data=''
-    form.slug.data=''
+    if form.validate_on_submit():
+        poster = current_user.id
+        post = Posts(
+            title=form.title.data,
+            content=form.content.data,
+            poster_id=poster,
+            user_id=poster,  # Set the user_id to the current user's ID
+            slug=form.slug.data
+        )
+        # Clear data
+        form.title.data = ''
+        form.content.data = ''
+        form.slug.data = ''
 
-    #Add data to database
-    db.session.add(post)
-    db.session.commit()
+        try:
+            db.session.add(post)
+            db.session.commit()
+            flash("Blog Post Submitted Successfully!")
+            return redirect(url_for('posts'))  # Redirect to a relevant page
+        except IntegrityError:
+            db.session.rollback()
+            flash("Error adding post. Please try again.")
 
-    flash("Blog Post Submitted Successfully!")
-
-    #Redirect to the webpage
-  return render_template("add_post.html",form=form)
+    return render_template("add_post.html", form=form)
 
 #json thing
 @app.route('/date')
@@ -243,8 +256,10 @@ class Users(db.Model,UserMixin):
   #Password stuff
   password_hash=db.Column(db.String(120))
   #User can have many post(one to many)->90
-  posts=db.relationship('Posts',backref='poster')
-
+  #posts=db.relationship('Posts',backref='poster')
+  posts = db.relationship('Posts', foreign_keys=[Posts.poster_id], backref='poster', lazy=True)
+  
+  
   @property
   def password(self):
     raise AttributeError('Password is not Readable!')

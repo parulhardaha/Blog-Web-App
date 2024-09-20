@@ -11,6 +11,7 @@
           <th>Username</th>
           <th>Email</th>
           <th>Favorite Color</th>
+          <th>Posts</th>
         </tr>
       </thead>
       <tbody>
@@ -21,6 +22,7 @@
             <td>{{ user.username }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.favorite_Colour }}</td>
+            <td>{{ user.posts|length }}</td>  <!-- Counting the number of posts -->
           </tr>
         {% else %}
           <tr>
