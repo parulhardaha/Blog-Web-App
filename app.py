@@ -343,6 +343,13 @@ def add_user():
   our_users=Users.query.order_by(Users.date_added)   
   return render_template("add_user.html",form=form,name=name,our_users=our_users)
 
+
+@app.route('/users')
+def all_users():
+    users = Users.query.all()  # Fetch all users from the database
+    return render_template('all_users.html', users=users)
+
+
 #create a Route decorator url
 # http://127.0.0.1:5000/
 @app.route('/')
