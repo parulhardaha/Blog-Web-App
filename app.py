@@ -75,14 +75,19 @@ def admin():
 
 
 #Create search fun
-@app.route('/search',methods=["POST"])
+@app.route('/search', methods=["POST"])
 def search():
-  form=SearchForm()
-  #print("searched", form.searched.data)
-  if form.validate_on_submit():
-    post.searched=form.searched.data
-    return render_template("search.html",form=form,searched=post.searched)
-  #return render_template("200.html")
+    form = SearchForm()
+
+    if form.validate_on_submit():
+        searched = form.searched.data
+        posts = Posts.query.filter(Posts.content.like('%' + searched + '%')).order_by(Posts.title).all()
+
+        return render_template("search.html", form=form, searched=searched, posts=posts)
+
+    flash("Whoops! There was some error in your search. Please try again!")
+    posts = Posts.query.order_by(Posts.date_added)
+    return render_template("posts.html", posts=posts)
 
 
 

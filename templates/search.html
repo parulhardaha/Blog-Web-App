@@ -1,9 +1,39 @@
 {% extends 'base.html' %}
 
-{% block content % }
+{% block content %}
 
-<br>
-<h3>You Searched for...</h3>
-<p> {{searched }}</p>
+<div class="container mt-5">
+    <!-- Search Header -->
+    <div class="text-center mb-4">
+        <h3 class="fw-bold text-primary">You Searched For...</h3>
+        <p class="lead text-secondary">{{ searched }}</p>
+    </div>
+
+    <!-- Search Results -->
+    <div class="row justify-content-center">
+        {% if posts %}
+            {% for post in posts %}
+            <div class="col-md-8 mb-4">
+                <div class="card shadow-sm border-0 rounded">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('post', id=post.id) }}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="text-muted mb-2">
+                            By: {{ post.poster.name }} | {{ post.date_added }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-md-6 text-center">
+                <h5 class="text-danger">No posts matched your search query.</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
 
 {% endblock %}
