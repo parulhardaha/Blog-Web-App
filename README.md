@@ -16,7 +16,10 @@
 
 
 5. Implemented a search functionality to quickly search blog posts using keywords
+<img width="1725" alt="Screenshot 2024-12-18 at 11 19 51 AM" src="https://github.com/user-attachments/assets/1e933540-1ff4-4b52-be98-aabc81ef2a73" />
+<img width="1725" alt="Screenshot 2024-12-18 at 11 21 37 AM" src="https://github.com/user-attachments/assets/625caaef-20fd-4df8-b1c7-d698cdcf6edb" />
 
-6. Throughout the flow, proper error handling has been implemented with appropriate messages and codes, as well as password encryption, and user authentication and authorization.
+
+7. Throughout the flow, proper error handling has been implemented with appropriate messages and codes, as well as password encryption, and user authentication and authorization.
 
  ![Screenshot 2024-05-21 232009](https://github.com/parulhardaha/cric-blog/assets/114014173/62a6350a-5c61-4970-82cb-86171c712a19)
