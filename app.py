@@ -256,7 +256,6 @@ class Users(db.Model,UserMixin):
   username=db.Column(db.String(20),nullable=False,unique=True)
   name=db.Column(db.String(100),nullable=False)
   email=db.Column(db.String(100),nullable=False,unique=True)
-  favorite_Colour=db.Column(db.String(100))
   date_added=db.Column(db.DateTime,default=datetime.utcnow)
   #Password stuff
   password_hash=db.Column(db.String(120))
@@ -302,7 +301,6 @@ class UserForm(FlaskForm):
    name= StringField ("Enter your Name here", validators=[DataRequired()])
    username= StringField ("Enter your UserName", validators=[DataRequired()])
    email= StringField ("Email", validators=[DataRequired()])
-   favorite_Colour=StringField("Favorite Colour")
    password_hash=PasswordField('Password', validators=[DataRequired(),EqualTo('password_hash2',message="Passowrds mush match!")])
    password_hash2=PasswordField('Confirm Password',validators=[DataRequired()])
    submit= SubmitField("Submit") 
@@ -316,7 +314,6 @@ def update(id):
   if request.method=='POST':
     name_to_update.name=request.form['name']
     name_to_update.email=request.form['email']
-    name_to_update.favorite_Colour=request.form['favorite_Colour']
     name_to_update.username=request.form['username']
     try:
       db.session.commit()
@@ -350,24 +347,17 @@ def add_user():
        #Hashed Passwd
        hashed_pw = generate_password_hash(
            form.password_hash.data, "pbkdf2:sha256")
-       user=Users(name=form.name.data,username=form.username.data,email=form.email.data,favorite_Colour=form.favorite_Colour.data,password_hash=hashed_pw)
+       user=Users(name=form.name.data,username=form.username.data,email=form.email.data,password_hash=hashed_pw)
        db.session.add(user)
        db.session.commit()
      name=form.name.data   
      form.name.data=''
      form.username.data=''
      form.email.data=''
-     form.favorite_Colour.data=''
      form.password_hash.data=''
      flash("User Added Data Successfully!")
   our_users=Users.query.order_by(Users.date_added)   
   return render_template("add_user.html",form=form,name=name,our_users=our_users)
-
-
-@app.route('/users')
-def all_users():
-    users = Users.query.all()  # Fetch all users from the database
-    return render_template('all_users.html', users=users)
 
 def seed_database():
     # Ensure at least one user exists
@@ -376,12 +366,14 @@ def seed_database():
     if not admin_user:
         admin_user = Users(username="admin", email="admin@example.com", name="Parul Hardaha")
         db.session.add(admin_user)
+        another_user = Users(username="deepanshu", email="deepanshu@example.com", name="Deepanshu Hardaha")
+        db.session.add(another_user)
         db.session.commit()  # Commit so we get an ID for admin_user
 
     # Create new posts with a valid `poster_id`
     new_posts = [
         Posts(title="Harry Potter", content="Harry Potter is a series of seven fantasy novels written by British author J. K. Rowling. The novels chronicle the lives of a young wizard, Harry Potter, and his friends, Hermione Granger and Ron Weasley, all of whom are students at Hogwarts School of Witchcraft and Wizardry. The main story arc concerns Harry's conflict with Lord Voldemort, a dark wizard who intends to become immortal, overthrow the wizard governing body known as the Ministry of Magic, and subjugate all wizards and Muggles (non-magical people).The series was originally published in English by Bloomsbury in the United Kingdom and Scholastic Press in the United States.", slug="@potterhead", poster_id=1, user_id=1),
-        Posts(title="MS Dhoni: The Man, The Myth, The Legend", content="The Rise of a Legend Mahendra Singh Dhoni’s rise to fame is a tale of resilience, hard work, and unmatched dedication. With no cricketing background, he carved his own path with sheer determination. From being a ticket collector at Kharagpur railway station to lifting the World Cup for India, his journey embodies the spirit of dreams turning into reality. Captain Cool: A Leader Like No Other Dhoni’s calm and composed demeanor on the field earned him the nickname “Captain Cool.” His ability to make crucial decisions under pressure, whether it was promoting himself in the 2011 World Cup final or backing young talents like Virat Kohli and Rohit Sharma, showcased his sharp cricketing acumen.", slug="msdhoni", poster_id=1, user_id=1),
+        Posts(title="MS Dhoni: The Man, The Myth, The Legend", content="The Rise of a Legend Mahendra Singh Dhoni’s rise to fame is a tale of resilience, hard work, and unmatched dedication. With no cricketing background, he carved his own path with sheer determination. From being a ticket collector at Kharagpur railway station to lifting the World Cup for India, his journey embodies the spirit of dreams turning into reality. Captain Cool: A Leader Like No Other Dhoni’s calm and composed demeanor on the field earned him the nickname “Captain Cool.” His ability to make crucial decisions under pressure, whether it was promoting himself in the 2011 World Cup final or backing young talents like Virat Kohli and Rohit Sharma, showcased his sharp cricketing acumen.", slug="msdhoni", poster_id=2, user_id=2),
         Posts(title="The Indian Premier League", content="The IPL was conceptualized by the Board of Control for Cricket in India (BCCI) in 2008 as a franchise-based T20 league. Inspired by international leagues like the English Premier League (EPL) and the NBA, the IPL brought together players from different countries to compete in a fast-paced, high-energy format. The first-ever IPL match, played on April 18, 2008, saw Brendon McCullum smash a breathtaking 158* for Kolkata Knight Riders, setting the stage for a tournament that would soon capture the world’s imagination.", slug="@ipl", poster_id=1, user_id=1),
         Posts(title="The Fascinating World of Cats", content="Cats are one of the most adorable, mysterious, and independent pets in the world. Whether they’re gracefully lounging in the sun, curiously exploring their surroundings, or playfully chasing after a toy, their charm is undeniable. Their unique personalities range from affectionate and cuddly to mischievous and aloof, making them fascinating companions.", slug="@catlove", poster_id=1, user_id=1)
 

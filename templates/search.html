@@ -22,7 +22,7 @@
                             </a>
                         </h5>
                         <p class="text-muted mb-2">
-                            By: {{ post.poster.name }} | {{ post.date_added }}
+                            By: {{ post.poster.name }} | {{ post.date_added.strftime('%I:%M %p, %d %B %Y') }}
                         </p>
                     </div>
                 </div>
